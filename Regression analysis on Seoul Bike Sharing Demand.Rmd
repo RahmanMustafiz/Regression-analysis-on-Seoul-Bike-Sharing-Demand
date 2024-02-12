@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+
+
+library(corrplot)
+library(leaps) 
+library(ggplot2)
+library(broom)
+library(Hmisc)
+library(car)
+library(olsrr)
+
+
+bikedata <- read.csv("~/Desktop/Bikedata.csv")
+
+bikedata$X <- NULL
+```
+
+
+#Task 1
+
+```{r}
+summary(bikedata)
+
+# Remove the last two columns for correlation matrix
+bikedata_num <- bikedata[, -c(length(bikedata)-1, length(bikedata))]
+
+# correlation matrix
+cor_matrix <- rcorr(as.matrix(bikedata_num))
+
+#Correlation plot of all the numeric variables [dev.off()]
+corrplot(cor_matrix$r, type = "full", order = "hclust")
+
+#Count for categorical data
+Seasons_count <- table(bikedata$Seasons)
+Seasons_count
+
+Holiday_count <- table(bikedata$Holiday)
+Holiday_count
+```
+
+
+# Task 2
+
+```{r}
+lm_bike = lm(log.Rented.Bike.Count ~ ., bikedata)
+summary(lm_bike)
+```
+
+
+
+
+#Task 3
+```{r}
+ols_step_best_subset(lm_bike)
+
+```
+```{r}
+lm_bike_subset = lm(log.Rented.Bike.Count ~ Hour+ Temperature +Humidity+ Wind.speed+ Rainfall+ Seasons+ Holiday, bikedata)
+
+summary(lm_bike_subset)
+
+
+
+
+```
+
+```{r}
+
+#Task 4
+plot(lm_bike_subset$fitted.values,lm_bike_subset$residuals,xlab = "Fitted values",ylab = "Residuals")
+abline(h = 0,lwd=2,lty=5,col='blue')
+#abline(lm(log.Rented.Bike.Count ~ ., data=bikedata),col='red')
+
+
+
+
+plot(lm_bike_subset,which=3, sub.caption = '')
+
+
+
+plot(lm_bike_subset,which=2, sub.caption = '')
+
+
+confint(lm_bike_subset, level=0.95)
+
+
+vif(lm_bike_subset)
+
+```
+
